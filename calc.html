@@ -407,132 +407,133 @@ function drawCard(calc){
   const dict = I18N[currentLang];
 
   // ============================================================
-  // BG — navy upper, cream lower; horizon at ~62%, sun setting on it
+  // LAYOUT (1080×1920)
+  //   Sky    [0,  HORIZON]       — navy, holds context text
+  //   Ground [HORIZON, FOOTER_TOP] — cream, holds unit + sub
+  //   Footer [FOOTER_TOP, H]     — navy, holds brand
+  //
+  //   Sun straddles HORIZON. Number sits in the sun.
+  //   Pre-phrase ("还能见爸妈") floats in sky ABOVE sun (no overlap).
   // ============================================================
-  const HORIZON = Math.round(H * 0.62);
-  const FOOTER_H = 240;
+  const HORIZON   = 1280;        // y where navy meets cream
+  const FOOTER_H  = 240;
+  const FOOTER_TOP = H - FOOTER_H;
+  const sunR  = 300;
+  const sunCx = W / 2;
+  const sunCy = HORIZON;
+  const SUN_TOP    = sunCy - sunR;  // 980
+  const SUN_BOTTOM = sunCy + sunR;  // 1580
 
-  // Navy sky (top section)
+  // ---- Sky (navy) ----
   ctx.fillStyle = '#1B1B2E';
   ctx.fillRect(0, 0, W, HORIZON);
 
-  // Cream "ground" (mid section)
-  ctx.fillStyle = '#FAF5EB';
-  ctx.fillRect(0, HORIZON, W, H - HORIZON - FOOTER_H);
-
-  // Navy footer
-  ctx.fillStyle = '#1B1B2E';
-  ctx.fillRect(0, H - FOOTER_H, W, FOOTER_H);
-
-  // Sun — large amber circle, half above / half below horizon
-  const sunR = 380, sunCx = W/2, sunCy = HORIZON;
-  ctx.save();
-  // Outer glow
-  const grad = ctx.createRadialGradient(sunCx, sunCy, sunR*0.4, sunCx, sunCy, sunR*1.6);
-  grad.addColorStop(0, 'rgba(217,142,38,0.55)');
-  grad.addColorStop(1, 'rgba(217,142,38,0)');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, HORIZON - sunR*1.6, W, sunR*3);
-  // Sun disc
-  ctx.fillStyle = '#D98E26';
-  ctx.beginPath();
-  ctx.arc(sunCx, sunCy, sunR, 0, Math.PI*2);
-  ctx.fill();
-  ctx.restore();
-
-  // Subtle stars in the sky (deterministic from the number)
+  // ---- Stars (deterministic) ----
   ctx.save();
   ctx.fillStyle = '#FAF5EB';
-  ctx.globalAlpha = 0.55;
-  const seed = (calc.visitsLeft * 9301 + 49297) % 233280;
-  let s = seed;
-  function rand(){ s = (s * 9301 + 49297) % 233280; return s / 233280; }
-  for (let i = 0; i < 22; i++){
+  ctx.globalAlpha = 0.50;
+  let s = (calc.visitsLeft * 9301 + 49297) % 233280;
+  const rand = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+  for (let i = 0; i < 28; i++){
     const x = rand() * W;
-    const y = rand() * (HORIZON - sunR * 0.6);
-    const r = 2 + rand() * 3;
+    // keep stars away from text band (y 100–360) and the sun glow
+    const y = 80 + rand() * (SUN_TOP - 180);
+    const r = 1.5 + rand() * 3;
+    ctx.globalAlpha = 0.35 + rand() * 0.45;
     ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI*2);
+    ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
   }
   ctx.restore();
 
-  // ============================================================
-  // TOP TEXT (on navy sky) — "我这辈子，" small + intimate
-  // ============================================================
-  ctx.fillStyle = 'rgba(250,245,235,0.72)';
-  ctx.font = '500 44px -apple-system, "PingFang SC", "Helvetica Neue", sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(dict.card_top, W/2, 180);
-
-  // ============================================================
-  // KICKER (under top, on navy) — "这是总数。这一辈子。"
-  // ============================================================
-  ctx.fillStyle = '#D98E26';
-  ctx.font = '700 40px -apple-system, "PingFang SC", sans-serif';
-  ctx.fillText(dict.card_kicker, W/2, 252);
-
-  // ============================================================
-  // PRE phrase (over the sun, on navy) — "还能见爸妈"
-  // ============================================================
+  // ---- Ground (cream) ----
   ctx.fillStyle = '#FAF5EB';
-  ctx.font = '700 66px -apple-system, "PingFang SC", sans-serif';
-  ctx.fillText(dict.card_mid_pre, W/2, HORIZON - 80);
+  ctx.fillRect(0, HORIZON, W, FOOTER_TOP - HORIZON);
 
-  // ============================================================
-  // HUGE NUMBER (centered on the horizon, white on amber sun)
-  // ============================================================
+  // ---- Footer (navy) ----
+  ctx.fillStyle = '#1B1B2E';
+  ctx.fillRect(0, FOOTER_TOP, W, FOOTER_H);
+
+  // ---- Sun glow + disc ----
   ctx.save();
-  ctx.fillStyle = '#FAF5EB';
-  ctx.font = '900 320px -apple-system, "PingFang SC", "Helvetica Neue", sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(calc.visitsLeft.toLocaleString(), W/2, HORIZON + 24);
+  const grad = ctx.createRadialGradient(sunCx, sunCy, sunR * 0.4, sunCx, sunCy, sunR * 1.8);
+  grad.addColorStop(0, 'rgba(217,142,38,0.55)');
+  grad.addColorStop(1, 'rgba(217,142,38,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, sunCy - sunR * 1.8, W, sunR * 3.6);
+  ctx.fillStyle = '#D98E26';
+  ctx.beginPath();
+  ctx.arc(sunCx, sunCy, sunR, 0, Math.PI * 2);
+  ctx.fill();
   ctx.restore();
 
-  // ============================================================
-  // POST unit ("次") — on the cream ground, under the sun
-  // ============================================================
-  ctx.fillStyle = '#1B1B2E';
-  ctx.font = '700 76px -apple-system, "PingFang SC", sans-serif';
   ctx.textAlign = 'center';
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillText(dict.card_mid_post, W/2, HORIZON + sunR + 80);
 
-  // Sub line ("大约 35 年，每一次见面都算一次")
+  // ---- Top label "我这辈子，" — high on navy, muted ----
+  ctx.fillStyle = 'rgba(250,245,235,0.72)';
+  ctx.font = '500 44px -apple-system, "PingFang SC", "Helvetica Neue", sans-serif';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText(dict.card_top, W / 2, 200);
+
+  // ---- Kicker "这是总数。这一辈子。" — amber on navy ----
+  ctx.fillStyle = '#D98E26';
+  ctx.font = '700 46px -apple-system, "PingFang SC", sans-serif';
+  ctx.fillText(dict.card_kicker, W / 2, 280);
+
+  // ---- Pre-phrase "还能见爸妈" — floats above the sun, clear of disc ----
+  // SUN_TOP = 980, so place at 870 (110px gap above sun)
+  ctx.fillStyle = '#FAF5EB';
+  ctx.font = '600 56px -apple-system, "PingFang SC", sans-serif';
+  ctx.fillText(dict.card_mid_pre, W / 2, 870);
+
+  // ---- HUGE NUMBER — centered on sun, sized to fit cleanly ----
+  ctx.save();
+  ctx.fillStyle = '#FAF5EB';
+  ctx.font = '900 260px -apple-system, "PingFang SC", "Helvetica Neue", sans-serif';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(calc.visitsLeft.toLocaleString(), W / 2, sunCy);
+  ctx.restore();
+
+  // ---- Unit "次" — on cream, below sun ----
+  ctx.fillStyle = '#1B1B2E';
+  ctx.font = '700 72px -apple-system, "PingFang SC", sans-serif';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText(dict.card_mid_post, W / 2, SUN_BOTTOM + 100);
+
+  // ---- Sub explanation ----
   ctx.fillStyle = '#7A7560';
-  ctx.font = '500 32px -apple-system, "PingFang SC", sans-serif';
-  ctx.fillText(dict.card_sub(calc.yearsLeft), W/2, HORIZON + sunR + 140);
+  ctx.font = '500 30px -apple-system, "PingFang SC", sans-serif';
+  ctx.fillText(dict.card_sub(calc.yearsLeft), W / 2, SUN_BOTTOM + 160);
 
   // ============================================================
   // FOOTER — brand + URL on navy
   // ============================================================
-  // Moon crescent (left-aligned with brand text)
-  const footerY = H - FOOTER_H/2 - 18;
-  const moonX = W/2 - 200;
+  const footerCenterY = FOOTER_TOP + FOOTER_H / 2;
+
+  // Crescent moon glyph
   ctx.save();
-  ctx.translate(moonX, footerY);
+  ctx.translate(W / 2 - 220, footerCenterY - 20);
   ctx.fillStyle = '#D98E26';
   ctx.beginPath();
-  ctx.arc(0, 0, 26, 0, Math.PI*2);
+  ctx.arc(0, 0, 28, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = '#1B1B2E';
   ctx.beginPath();
-  ctx.arc(9, -3, 22, 0, Math.PI*2);
+  ctx.arc(10, -3, 24, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 
-  // Brand text
+  // Brand
   ctx.fillStyle = '#FAF5EB';
   ctx.font = '700 44px -apple-system, "PingFang SC", sans-serif';
   ctx.textAlign = 'left';
-  ctx.fillText(dict.card_brand, moonX + 50, footerY + 16);
+  ctx.fillText(dict.card_brand, W / 2 - 170, footerCenterY - 6);
 
-  // URL line (centered)
+  // URL
   ctx.fillStyle = '#D98E26';
   ctx.font = '600 30px -apple-system, "Helvetica Neue", sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText(dict.card_url, W/2, H - 70);
+  ctx.fillText(dict.card_url, W / 2, footerCenterY + 60);
 }
 
 // ---------------- Share / Download ----------------
