@@ -206,12 +206,13 @@ const I18N = {
     app_btn:"下载完整版 App · $2.99",
     line1:(calc)=>["如果他们活到 ", `${calc.life}`, " 岁，按你现在的频率，你还能见他们 ", `${calc.visitsLeft}`, " 次。"],
     line2:(calc)=>["换算成天，是 ", calc.yearsLeft.toFixed(1), " 年里 ", calc.days.toLocaleString(), " 天的零散时光。"],
-    card_top:"我这辈子，",
-    card_mid_pre:"还能见爸妈", card_mid_post:"次",
-    card_sub:(y)=>`大约 ${y.toFixed(1)} 年，每一次见面都算一次`,
-    card_kicker:"这是总数。这一辈子。",
-    card_brand:"几天 · 算算你的",
-    card_url:"DaysWith.app"
+    // ── card v3 (research-driven) ─────────────────────────
+    card_eyebrow:"MOM & DAD",
+    card_topline:"我和爸妈，这辈子还能见",
+    card_number_caption:"次面",
+    card_punch:"见一次，少一次。",
+    card_outro:"——这一辈子。",
+    card_brand:"几天 · 算算你的 DaysWith.app"
   },
   "zh-Hant":{
     brand:"幾天 · Few Days",
@@ -232,12 +233,12 @@ const I18N = {
     app_btn:"下載完整版 App · $2.99",
     line1:(calc)=>["如果他們活到 ", `${calc.life}`, " 歲，按你現在的頻率，你還能見他們 ", `${calc.visitsLeft}`, " 次。"],
     line2:(calc)=>["換算成天，是 ", calc.yearsLeft.toFixed(1), " 年裡 ", calc.days.toLocaleString(), " 天的零散時光。"],
-    card_top:"我這輩子，",
-    card_mid_pre:"還能見爸媽", card_mid_post:"次",
-    card_sub:(y)=>`大約 ${y.toFixed(1)} 年，每一次見面都算一次`,
-    card_kicker:"這是總數。這一輩子。",
-    card_brand:"幾天 · 算算你的",
-    card_url:"DaysWith.app"
+    card_eyebrow:"MOM & DAD",
+    card_topline:"我和爸媽，這輩子還能見",
+    card_number_caption:"次面",
+    card_punch:"見一次，少一次。",
+    card_outro:"——這一輩子。",
+    card_brand:"幾天 · 算算你的 DaysWith.app"
   },
   "en":{
     brand:"Few Days",
@@ -258,12 +259,12 @@ const I18N = {
     app_btn:"Get the iOS app · $2.99",
     line1:(calc)=>["At your current pace, you have about ", `${calc.visitsLeft}`, " more visits left. Total. Ever."],
     line2:(calc)=>["That's ", calc.days.toLocaleString(), " days of presence, spread across ", calc.yearsLeft.toFixed(1), " years."],
-    card_top:"In my whole life,",
-    card_mid_pre:"I'll see Mom & Dad", card_mid_post:"more times",
-    card_sub:(y)=>`~${y.toFixed(1)} years. That's every visit. Ever.`,
-    card_kicker:"This is the total. The whole thing.",
-    card_brand:"Few Days · find yours",
-    card_url:"DaysWith.app"
+    card_eyebrow:"MOM & DAD",
+    card_topline:"Times I'll see them again. Ever.",
+    card_number_caption:"",
+    card_punch:"One less. Every time.",
+    card_outro:"— That's the whole thing.",
+    card_brand:"Few Days · find yours · DaysWith.app"
   }
 };
 
@@ -407,133 +408,130 @@ function drawCard(calc){
   const dict = I18N[currentLang];
 
   // ============================================================
-  // LAYOUT (1080×1920)
-  //   Sky    [0,  HORIZON]       — navy, holds context text
-  //   Ground [HORIZON, FOOTER_TOP] — cream, holds unit + sub
-  //   Footer [FOOTER_TOP, H]     — navy, holds brand
-  //
-  //   Sun straddles HORIZON. Number sits in the sun.
-  //   Pre-phrase ("还能见爸妈") floats in sky ABOVE sun (no overlap).
+  // v3 LAYOUT — research-driven (2024-2025 share-card patterns)
+  //  • Single full-image vertical gradient (no horizontal divisions)
+  //  • Number occupies ~25% of canvas height (NeteaseMusic / Spotify Wrapped)
+  //  • 4-layer typography ladder: eyebrow / topline / number / punch line
+  //  • Brand sits as a thin footer line at 5% — never competes
   // ============================================================
-  const HORIZON   = 1280;        // y where navy meets cream
-  const FOOTER_H  = 240;
-  const FOOTER_TOP = H - FOOTER_H;
-  const sunR  = 300;
-  const sunCx = W / 2;
-  const sunCy = HORIZON;
-  const SUN_TOP    = sunCy - sunR;  // 980
-  const SUN_BOTTOM = sunCy + sunR;  // 1580
 
-  // ---- Sky (navy) ----
-  ctx.fillStyle = '#1B1B2E';
-  ctx.fillRect(0, 0, W, HORIZON);
+  // ---- Background: warm twilight gradient (deep plum → ember red → dawn amber)
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0.00, '#1A0E2E');   // deep plum-black
+  bg.addColorStop(0.45, '#3D1B36');   // muted wine
+  bg.addColorStop(0.75, '#8B3A2F');   // ember red
+  bg.addColorStop(1.00, '#D98E26');   // warm amber
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
 
-  // ---- Stars (deterministic) ----
+  // ---- Subtle vignette + grain for premium feel
   ctx.save();
-  ctx.fillStyle = '#FAF5EB';
-  ctx.globalAlpha = 0.50;
+  const vg = ctx.createRadialGradient(W/2, H*0.4, H*0.2, W/2, H*0.4, H*0.9);
+  vg.addColorStop(0, 'rgba(0,0,0,0)');
+  vg.addColorStop(1, 'rgba(0,0,0,0.35)');
+  ctx.fillStyle = vg;
+  ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+
+  // ---- Faint deterministic specks (subtle texture, NOT a sky)
+  ctx.save();
   let s = (calc.visitsLeft * 9301 + 49297) % 233280;
   const rand = () => (s = (s * 9301 + 49297) % 233280) / 233280;
-  for (let i = 0; i < 28; i++){
+  for (let i = 0; i < 36; i++){
     const x = rand() * W;
-    // keep stars away from text band (y 100–360) and the sun glow
-    const y = 80 + rand() * (SUN_TOP - 180);
-    const r = 1.5 + rand() * 3;
-    ctx.globalAlpha = 0.35 + rand() * 0.45;
+    const y = rand() * H * 0.6;
+    const r = 1 + rand() * 2;
+    ctx.fillStyle = `rgba(250,245,235,${0.10 + rand() * 0.20})`;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
   }
   ctx.restore();
 
-  // ---- Ground (cream) ----
-  ctx.fillStyle = '#FAF5EB';
-  ctx.fillRect(0, HORIZON, W, FOOTER_TOP - HORIZON);
-
-  // ---- Footer (navy) ----
-  ctx.fillStyle = '#1B1B2E';
-  ctx.fillRect(0, FOOTER_TOP, W, FOOTER_H);
-
-  // ---- Sun glow + disc ----
-  ctx.save();
-  const grad = ctx.createRadialGradient(sunCx, sunCy, sunR * 0.4, sunCx, sunCy, sunR * 1.8);
-  grad.addColorStop(0, 'rgba(217,142,38,0.55)');
-  grad.addColorStop(1, 'rgba(217,142,38,0)');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, sunCy - sunR * 1.8, W, sunR * 3.6);
-  ctx.fillStyle = '#D98E26';
-  ctx.beginPath();
-  ctx.arc(sunCx, sunCy, sunR, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-
   ctx.textAlign = 'center';
 
-  // ---- Top label "我这辈子，" — high on navy, muted ----
-  ctx.fillStyle = 'rgba(250,245,235,0.72)';
-  ctx.font = '500 44px -apple-system, "PingFang SC", "Helvetica Neue", sans-serif';
+  // ============================================================
+  // TYPE LADDER
+  // y%  ratio  element
+  // 13%  1x   eyebrow ("MOM & DAD")
+  // 19%  3x   topline ("我和爸妈，这辈子还能见")
+  // 38%  18x  THE NUMBER (~420px) ← 25% of canvas height
+  // 64%  3x   number caption ("次面")
+  // 76%  5x   punch line ("见一次，少一次。") ← emotional climax
+  // 84%  2x   outro ("——这一辈子。")
+  // 95%  0.8x brand
+  // ============================================================
+
+  // 1. Eyebrow — small, wide-tracked, amber accent
+  ctx.fillStyle = 'rgba(217,142,38,0.85)';
+  ctx.font = '700 34px -apple-system, "Helvetica Neue", sans-serif';
   ctx.textBaseline = 'alphabetic';
-  ctx.fillText(dict.card_top, W / 2, 200);
+  // letter-spacing simulation: draw chars individually
+  const eb = dict.card_eyebrow;
+  const ebKern = 6;
+  ctx.save();
+  let ebW = 0;
+  for (const ch of eb) ebW += ctx.measureText(ch).width + ebKern;
+  let x = (W - ebW + ebKern) / 2;
+  for (const ch of eb) {
+    ctx.fillText(ch, x + ctx.measureText(ch).width/2, H * 0.085);
+    x += ctx.measureText(ch).width + ebKern;
+  }
+  ctx.restore();
 
-  // ---- Kicker "这是总数。这一辈子。" — amber on navy ----
-  ctx.fillStyle = '#D98E26';
-  ctx.font = '700 46px -apple-system, "PingFang SC", sans-serif';
-  ctx.fillText(dict.card_kicker, W / 2, 280);
+  // 2. Topline — medium, soft white
+  ctx.fillStyle = 'rgba(250,245,235,0.78)';
+  ctx.font = '500 46px -apple-system, "PingFang SC", "Helvetica Neue", sans-serif';
+  ctx.fillText(dict.card_topline, W / 2, H * 0.14);
 
-  // ---- Pre-phrase "还能见爸妈" — floats above the sun, clear of disc ----
-  // SUN_TOP = 980, so place at 870 (110px gap above sun)
-  ctx.fillStyle = '#FAF5EB';
-  ctx.font = '600 56px -apple-system, "PingFang SC", sans-serif';
-  ctx.fillText(dict.card_mid_pre, W / 2, 870);
-
-  // ---- HUGE NUMBER — centered on sun, sized to fit cleanly ----
+  // 3. THE NUMBER — dominates, ~420px / 25% of canvas height
+  // Auto-shrink if number is too wide (4+ digits)
   ctx.save();
   ctx.fillStyle = '#FAF5EB';
-  ctx.font = '900 260px -apple-system, "PingFang SC", "Helvetica Neue", sans-serif';
+  let numFont = 480;
+  const numStr = calc.visitsLeft.toLocaleString();
+  ctx.font = `900 ${numFont}px -apple-system, "Helvetica Neue", sans-serif`;
+  while (ctx.measureText(numStr).width > W * 0.82 && numFont > 240) {
+    numFont -= 20;
+    ctx.font = `900 ${numFont}px -apple-system, "Helvetica Neue", sans-serif`;
+  }
   ctx.textBaseline = 'middle';
-  ctx.fillText(calc.visitsLeft.toLocaleString(), W / 2, sunCy);
+  ctx.fillText(numStr, W / 2, H * 0.38);
   ctx.restore();
 
-  // ---- Unit "次" — on cream, below sun ----
-  ctx.fillStyle = '#1B1B2E';
-  ctx.font = '700 72px -apple-system, "PingFang SC", sans-serif';
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillText(dict.card_mid_post, W / 2, SUN_BOTTOM + 100);
+  // 4. Number caption — directly under the number
+  if (dict.card_number_caption) {
+    ctx.fillStyle = 'rgba(250,245,235,0.82)';
+    ctx.font = '600 56px -apple-system, "PingFang SC", sans-serif';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText(dict.card_number_caption, W / 2, H * 0.55);
+  }
 
-  // ---- Sub explanation ----
-  ctx.fillStyle = '#7A7560';
-  ctx.font = '500 30px -apple-system, "PingFang SC", sans-serif';
-  ctx.fillText(dict.card_sub(calc.yearsLeft), W / 2, SUN_BOTTOM + 160);
-
-  // ============================================================
-  // FOOTER — brand + URL on navy
-  // ============================================================
-  const footerCenterY = FOOTER_TOP + FOOTER_H / 2;
-
-  // Crescent moon glyph
-  ctx.save();
-  ctx.translate(W / 2 - 220, footerCenterY - 20);
-  ctx.fillStyle = '#D98E26';
-  ctx.beginPath();
-  ctx.arc(0, 0, 28, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = '#1B1B2E';
-  ctx.beginPath();
-  ctx.arc(10, -3, 24, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-
-  // Brand
+  // 5. Punch line — the emotional climax, largest text after the number
   ctx.fillStyle = '#FAF5EB';
-  ctx.font = '700 44px -apple-system, "PingFang SC", sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillText(dict.card_brand, W / 2 - 170, footerCenterY - 6);
+  ctx.font = '800 78px -apple-system, "PingFang SC", "Helvetica Neue", sans-serif';
+  ctx.fillText(dict.card_punch, W / 2, H * 0.72);
 
-  // URL
-  ctx.fillStyle = '#D98E26';
-  ctx.font = '600 30px -apple-system, "Helvetica Neue", sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(dict.card_url, W / 2, footerCenterY + 60);
+  // 6. Outro — soft echo
+  ctx.fillStyle = 'rgba(250,245,235,0.65)';
+  ctx.font = '500 36px -apple-system, "PingFang SC", sans-serif';
+  ctx.fillText(dict.card_outro, W / 2, H * 0.79);
+
+  // 7. Brand — small, bottom, never competes
+  ctx.fillStyle = 'rgba(250,245,235,0.55)';
+  ctx.font = '600 26px -apple-system, "PingFang SC", "Helvetica Neue", sans-serif';
+  // letter-spacing for brand line
+  const br = dict.card_brand;
+  const brKern = 2;
+  ctx.save();
+  let brW = 0;
+  for (const ch of br) brW += ctx.measureText(ch).width + brKern;
+  let bx = (W - brW + brKern) / 2;
+  for (const ch of br) {
+    ctx.fillText(ch, bx + ctx.measureText(ch).width/2, H * 0.95);
+    bx += ctx.measureText(ch).width + brKern;
+  }
+  ctx.restore();
 }
 
 // ---------------- Share / Download ----------------
