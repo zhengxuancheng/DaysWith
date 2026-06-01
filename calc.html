@@ -206,13 +206,11 @@ const I18N = {
     app_btn:"下载完整版 App · $2.99",
     line1:(calc)=>["如果他们活到 ", `${calc.life}`, " 岁，按你现在的频率，你还能见他们 ", `${calc.visitsLeft}`, " 次。"],
     line2:(calc)=>["换算成天，是 ", calc.yearsLeft.toFixed(1), " 年里 ", calc.days.toLocaleString(), " 天的零散时光。"],
-    // ── card v3 (research-driven) ─────────────────────────
-    card_eyebrow:"MOM & DAD",
-    card_topline:"我和爸妈，这辈子还能见",
-    card_number_caption:"次面",
+    // ── card v4 (minimalist) ──────────────────────────────
+    card_topline:"和爸妈，还能见",
+    card_number_caption:"次",
     card_punch:"见一次，少一次。",
-    card_outro:"——这一辈子。",
-    card_brand:"几天 · 算算你的 DaysWith.app"
+    card_brand:"几天 · DaysWith.app"
   },
   "zh-Hant":{
     brand:"幾天 · Few Days",
@@ -233,12 +231,10 @@ const I18N = {
     app_btn:"下載完整版 App · $2.99",
     line1:(calc)=>["如果他們活到 ", `${calc.life}`, " 歲，按你現在的頻率，你還能見他們 ", `${calc.visitsLeft}`, " 次。"],
     line2:(calc)=>["換算成天，是 ", calc.yearsLeft.toFixed(1), " 年裡 ", calc.days.toLocaleString(), " 天的零散時光。"],
-    card_eyebrow:"MOM & DAD",
-    card_topline:"我和爸媽，這輩子還能見",
-    card_number_caption:"次面",
+    card_topline:"和爸媽，還能見",
+    card_number_caption:"次",
     card_punch:"見一次，少一次。",
-    card_outro:"——這一輩子。",
-    card_brand:"幾天 · 算算你的 DaysWith.app"
+    card_brand:"幾天 · DaysWith.app"
   },
   "en":{
     brand:"Few Days",
@@ -259,12 +255,10 @@ const I18N = {
     app_btn:"Get the iOS app · $2.99",
     line1:(calc)=>["At your current pace, you have about ", `${calc.visitsLeft}`, " more visits left. Total. Ever."],
     line2:(calc)=>["That's ", calc.days.toLocaleString(), " days of presence, spread across ", calc.yearsLeft.toFixed(1), " years."],
-    card_eyebrow:"MOM & DAD",
-    card_topline:"Times I'll see them again. Ever.",
-    card_number_caption:"",
-    card_punch:"One less. Every time.",
-    card_outro:"— That's the whole thing.",
-    card_brand:"Few Days · find yours · DaysWith.app"
+    card_topline:"I'll see them",
+    card_number_caption:"more times.",
+    card_punch:"Every visit, one less.",
+    card_brand:"Few Days · DaysWith.app"
   }
 };
 
@@ -451,76 +445,51 @@ function drawCard(calc){
   ctx.textAlign = 'center';
 
   // ============================================================
-  // TYPE LADDER
-  // y%  ratio  element
-  // 13%  1x   eyebrow ("MOM & DAD")
-  // 19%  3x   topline ("我和爸妈，这辈子还能见")
-  // 38%  18x  THE NUMBER (~420px) ← 25% of canvas height
-  // 64%  3x   number caption ("次面")
-  // 76%  5x   punch line ("见一次，少一次。") ← emotional climax
-  // 84%  2x   outro ("——这一辈子。")
-  // 95%  0.8x brand
+  // v4 TYPE LADDER (minimalist — 4 elements only)
+  // y%  element                          color
+  // 19%  topline ("和爸妈，还能见")        white-72%
+  // 42%  THE NUMBER (~480px)              cream
+  // 60%  caption ("次")                    white-78%
+  // 78%  punch ("见一次，少一次。")         cream, 80px, bold
+  // 95%  brand                             white-50%
   // ============================================================
 
-  // 1. Eyebrow — small, wide-tracked, amber accent
-  ctx.fillStyle = 'rgba(217,142,38,0.85)';
-  ctx.font = '700 34px -apple-system, "Helvetica Neue", sans-serif';
+  // 1. Topline
+  ctx.fillStyle = 'rgba(250,245,235,0.72)';
+  ctx.font = '500 50px -apple-system, "PingFang SC", "Helvetica Neue", sans-serif';
   ctx.textBaseline = 'alphabetic';
-  // letter-spacing simulation: draw chars individually
-  const eb = dict.card_eyebrow;
-  const ebKern = 6;
-  ctx.save();
-  let ebW = 0;
-  for (const ch of eb) ebW += ctx.measureText(ch).width + ebKern;
-  let x = (W - ebW + ebKern) / 2;
-  for (const ch of eb) {
-    ctx.fillText(ch, x + ctx.measureText(ch).width/2, H * 0.085);
-    x += ctx.measureText(ch).width + ebKern;
-  }
-  ctx.restore();
+  ctx.fillText(dict.card_topline, W / 2, H * 0.20);
 
-  // 2. Topline — medium, soft white
-  ctx.fillStyle = 'rgba(250,245,235,0.78)';
-  ctx.font = '500 46px -apple-system, "PingFang SC", "Helvetica Neue", sans-serif';
-  ctx.fillText(dict.card_topline, W / 2, H * 0.14);
-
-  // 3. THE NUMBER — dominates, ~420px / 25% of canvas height
-  // Auto-shrink if number is too wide (4+ digits)
+  // 2. THE NUMBER — dominates ~25% canvas height
   ctx.save();
   ctx.fillStyle = '#FAF5EB';
-  let numFont = 480;
+  let numFont = 500;
   const numStr = calc.visitsLeft.toLocaleString();
   ctx.font = `900 ${numFont}px -apple-system, "Helvetica Neue", sans-serif`;
-  while (ctx.measureText(numStr).width > W * 0.82 && numFont > 240) {
+  while (ctx.measureText(numStr).width > W * 0.82 && numFont > 260) {
     numFont -= 20;
     ctx.font = `900 ${numFont}px -apple-system, "Helvetica Neue", sans-serif`;
   }
   ctx.textBaseline = 'middle';
-  ctx.fillText(numStr, W / 2, H * 0.38);
+  ctx.fillText(numStr, W / 2, H * 0.42);
   ctx.restore();
 
-  // 4. Number caption — directly under the number
+  // 3. Caption — directly under number
   if (dict.card_number_caption) {
-    ctx.fillStyle = 'rgba(250,245,235,0.82)';
-    ctx.font = '600 56px -apple-system, "PingFang SC", sans-serif';
+    ctx.fillStyle = 'rgba(250,245,235,0.78)';
+    ctx.font = '600 60px -apple-system, "PingFang SC", sans-serif';
     ctx.textBaseline = 'alphabetic';
-    ctx.fillText(dict.card_number_caption, W / 2, H * 0.55);
+    ctx.fillText(dict.card_number_caption, W / 2, H * 0.60);
   }
 
-  // 5. Punch line — the emotional climax, largest text after the number
+  // 4. Punch line — emotional climax, the only element that carries weight after number
   ctx.fillStyle = '#FAF5EB';
-  ctx.font = '800 78px -apple-system, "PingFang SC", "Helvetica Neue", sans-serif';
-  ctx.fillText(dict.card_punch, W / 2, H * 0.72);
+  ctx.font = '800 82px -apple-system, "PingFang SC", "Helvetica Neue", sans-serif';
+  ctx.fillText(dict.card_punch, W / 2, H * 0.78);
 
-  // 6. Outro — soft echo
-  ctx.fillStyle = 'rgba(250,245,235,0.65)';
-  ctx.font = '500 36px -apple-system, "PingFang SC", sans-serif';
-  ctx.fillText(dict.card_outro, W / 2, H * 0.79);
-
-  // 7. Brand — small, bottom, never competes
-  ctx.fillStyle = 'rgba(250,245,235,0.55)';
-  ctx.font = '600 26px -apple-system, "PingFang SC", "Helvetica Neue", sans-serif';
-  // letter-spacing for brand line
+  // 5. Brand — minimal, bottom
+  ctx.fillStyle = 'rgba(250,245,235,0.50)';
+  ctx.font = '600 28px -apple-system, "PingFang SC", "Helvetica Neue", sans-serif';
   const br = dict.card_brand;
   const brKern = 2;
   ctx.save();
