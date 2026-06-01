@@ -206,10 +206,10 @@ const I18N = {
     app_btn:"下载完整版 App · $2.99",
     line1:(calc)=>["如果他们活到 ", `${calc.life}`, " 岁，按你现在的频率，你还能见他们 ", `${calc.visitsLeft}`, " 次。"],
     line2:(calc)=>["换算成天，是 ", calc.yearsLeft.toFixed(1), " 年里 ", calc.days.toLocaleString(), " 天的零散时光。"],
-    // ── card v4 (minimalist) ──────────────────────────────
+    // ── card v5 ───────────────────────────────────────────
     card_topline:"和爸妈，还能见",
     card_number_caption:"次",
-    card_punch:"见一次，少一次。",
+    card_punch:"记住他们现在的样子。",
     card_brand:"几天 · DaysWith.app"
   },
   "zh-Hant":{
@@ -233,7 +233,7 @@ const I18N = {
     line2:(calc)=>["換算成天，是 ", calc.yearsLeft.toFixed(1), " 年裡 ", calc.days.toLocaleString(), " 天的零散時光。"],
     card_topline:"和爸媽，還能見",
     card_number_caption:"次",
-    card_punch:"見一次，少一次。",
+    card_punch:"記住他們現在的樣子。",
     card_brand:"幾天 · DaysWith.app"
   },
   "en":{
@@ -257,7 +257,7 @@ const I18N = {
     line2:(calc)=>["That's ", calc.days.toLocaleString(), " days of presence, spread across ", calc.yearsLeft.toFixed(1), " years."],
     card_topline:"I'll see them",
     card_number_caption:"more times.",
-    card_punch:"Every visit, one less.",
+    card_punch:"Remember what they look like now.",
     card_brand:"Few Days · DaysWith.app"
   }
 };
@@ -483,9 +483,18 @@ function drawCard(calc){
   }
 
   // 4. Punch line — emotional climax, the only element that carries weight after number
+  //    Auto-shrink to fit width (EN copy can be much longer than zh).
+  ctx.save();
   ctx.fillStyle = '#FAF5EB';
-  ctx.font = '800 82px -apple-system, "PingFang SC", "Helvetica Neue", sans-serif';
+  let punchFont = 82;
+  ctx.font = `800 ${punchFont}px -apple-system, "PingFang SC", "Helvetica Neue", sans-serif`;
+  while (ctx.measureText(dict.card_punch).width > W * 0.86 && punchFont > 44) {
+    punchFont -= 2;
+    ctx.font = `800 ${punchFont}px -apple-system, "PingFang SC", "Helvetica Neue", sans-serif`;
+  }
+  ctx.textBaseline = 'alphabetic';
   ctx.fillText(dict.card_punch, W / 2, H * 0.78);
+  ctx.restore();
 
   // 5. Brand — minimal, bottom
   ctx.fillStyle = 'rgba(250,245,235,0.50)';
