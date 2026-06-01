@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#FAF5EB">
+<title>你和爸妈还剩多少天？— 几天</title>
+
+<meta property="og:title" content="你和爸妈还剩多少天？">
+<meta property="og:description" content="30 秒算一下，你可能比想的要少。">
+<meta property="og:image" content="https://zhengxuancheng.github.io/DaysWith/og.png">
+<meta property="og:type" content="website">
+
+<style>
+:root{
+  --bg:#FAF5EB;
+  --ink:#1B1B2E;
+  --amber:#D98E26;
+  --amber-deep:#A86A1A;
+  --muted:#7A7560;
+  --line:#1B1B2E14;
+  --card-bg:#FFF;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;overflow-x:hidden}
+.wrap{max-width:520px;margin:0 auto;padding:32px 24px 80px;position:relative}
+
+.hook{padding:40px 0 24px;text-align:center}
+.brand{font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--amber-deep);margin-bottom:28px;font-weight:600}
+.hook h1{font-size:34px;line-height:1.25;font-weight:800;letter-spacing:-.01em;margin-bottom:18px}
+.hook h1 em{color:var(--amber);font-style:normal}
+.hook p{font-size:16px;color:var(--muted);margin-bottom:32px}
+
+.moon{width:120px;height:120px;margin:0 auto 24px;display:block}
+
+.card{background:var(--card-bg);border:1px solid var(--line);border-radius:20px;padding:28px 22px;margin-bottom:18px;box-shadow:0 1px 0 #1B1B2E08}
+
+.form .row{margin-bottom:22px}
+.form label{display:block;font-size:14px;font-weight:600;color:var(--ink);margin-bottom:10px}
+.form label .hint{display:block;font-size:12px;color:var(--muted);font-weight:400;margin-top:2px}
+.form .slider-wrap{position:relative}
+.form .slider-value{position:absolute;top:-22px;right:0;font-size:14px;color:var(--amber-deep);font-weight:700;font-variant-numeric:tabular-nums}
+.form input[type=range]{width:100%;-webkit-appearance:none;background:transparent;height:32px}
+.form input[type=range]::-webkit-slider-runnable-track{height:6px;background:linear-gradient(to right,var(--amber) var(--pct,50%),#1B1B2E20 var(--pct,50%));border-radius:3px}
+.form input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--amber);border:3px solid #fff;box-shadow:0 2px 8px #1B1B2E40;margin-top:-10px;cursor:pointer}
+
+.cta{display:block;width:100%;padding:18px 24px;background:var(--ink);color:var(--bg);font-size:17px;font-weight:700;border:none;border-radius:14px;cursor:pointer;font-family:inherit;text-align:center;text-decoration:none;letter-spacing:.02em}
+.cta:active{transform:scale(.98)}
+.cta-amber{background:var(--amber);color:#fff}
+.cta-secondary{background:transparent;color:var(--ink);border:2px solid var(--ink)}
+
+.result{display:none;text-align:center;padding:48px 0 32px}
+.result.show{display:block}
+.result-label{font-size:14px;color:var(--muted);margin-bottom:8px;letter-spacing:.05em}
+.result-num{font-size:96px;line-height:1;font-weight:900;color:var(--amber);font-variant-numeric:tabular-nums;letter-spacing:-.04em;margin-bottom:6px}
+.result-unit{font-size:24px;font-weight:600;margin-bottom:32px}
+.result-line{font-size:17px;color:var(--ink);line-height:1.65;margin-bottom:14px;max-width:380px;margin-left:auto;margin-right:auto}
+.result-line strong{color:var(--amber-deep)}
+.result-divider{height:1px;background:var(--line);margin:32px auto 28px;max-width:120px}
+
+.share-wrap{background:#1B1B2E;border-radius:24px;padding:20px;margin:8px 0 20px}
+.share-canvas{width:100%;display:block;border-radius:12px}
+.share-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+
+.app-cta{margin-top:36px;text-align:center;padding:32px 20px;background:var(--ink);color:var(--bg);border-radius:20px}
+.app-cta h2{font-size:22px;font-weight:800;margin-bottom:10px;letter-spacing:-.01em}
+.app-cta p{font-size:14px;opacity:.7;margin-bottom:22px;line-height:1.6}
+.app-cta .cta{background:var(--amber);color:#fff}
+
+.footer{text-align:center;padding:36px 0 0;font-size:12px;color:var(--muted)}
+.footer a{color:var(--muted);text-decoration:none;margin:0 8px}
+
+@keyframes countUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.result.show .result-num,.result.show .result-line{animation:countUp .6s ease-out backwards}
+.result.show .result-line:nth-child(4){animation-delay:.1s}
+.result.show .result-line:nth-child(5){animation-delay:.2s}
+
+@media (max-width:380px){
+  .hook h1{font-size:28px}
+  .result-num{font-size:80px}
+}
+@media (min-width:560px){
+  .wrap{padding-top:60px}
+}
+
+.lang{position:absolute;top:24px;right:24px;font-size:12px;color:var(--muted)}
+.lang a{color:var(--muted);text-decoration:none;padding:0 4px;cursor:pointer}
+.lang a.active{color:var(--amber-deep);font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<div class="lang">
+  <a data-lang="zh-Hans">简</a>·<a data-lang="zh-Hant">繁</a>·<a data-lang="en">EN</a>
+</div>
+
+<section class="hook">
+  <div class="brand" data-i18n="brand">几天 · Few Days</div>
+
+  <svg class="moon" viewBox="0 0 120 120" fill="none">
+    <circle cx="60" cy="60" r="48" fill="#D98E26" opacity=".18"/>
+    <path d="M82 32a40 40 0 1 0 6 50 32 32 0 0 1-6-50z" fill="#D98E26"/>
+    <circle cx="48" cy="50" r="3" fill="#1B1B2E" opacity=".4"/>
+    <circle cx="62" cy="44" r="2.5" fill="#1B1B2E" opacity=".4"/>
+  </svg>
+
+  <h1 id="hookTitle"></h1>
+  <p data-i18n="hook_sub">30 秒算一下，你可能比想的要少。</p>
+</section>
+
+<section class="card form" id="form">
+  <div class="row">
+    <label>
+      <span data-i18n="q1">爸妈现在多少岁？</span>
+      <span class="hint" data-i18n="q1_hint">（取较年长的一位）</span>
+    </label>
+    <div class="slider-wrap">
+      <div class="slider-value"><span id="ageVal">65</span></div>
+      <input type="range" id="age" min="35" max="95" value="65">
+    </div>
+  </div>
+
+  <div class="row">
+    <label data-i18n="q2">你一年大概见他们几次？</label>
+    <div class="slider-wrap">
+      <div class="slider-value"><span id="visitsVal">5</span> <span data-i18n="times_unit">次</span></div>
+      <input type="range" id="visits" min="1" max="52" value="5">
+    </div>
+  </div>
+
+  <div class="row">
+    <label>
+      <span data-i18n="q3">你期望他们能活到多少岁？</span>
+      <span class="hint" data-i18n="q3_hint">（保留默认就好——长命百岁）</span>
+    </label>
+    <div class="slider-wrap">
+      <div class="slider-value"><span id="lifeVal">100</span></div>
+      <input type="range" id="life" min="70" max="110" value="100">
+    </div>
+  </div>
+
+  <button class="cta cta-amber" id="calcBtn" data-i18n="calc_btn">算给我看</button>
+</section>
+
+<section class="result" id="result">
+  <div class="result-label" data-i18n="r_label">你还能见爸妈</div>
+  <div class="result-num" id="rNum">—</div>
+  <div class="result-unit" data-i18n="r_unit">次</div>
+
+  <div class="result-line" id="rLine1"></div>
+  <div class="result-line" id="rLine2"></div>
+
+  <div class="result-divider"></div>
+
+  <p style="font-size:14px;color:var(--muted);margin-bottom:18px" data-i18n="share_prompt">把这张卡片发给一个你想念的人 ↓</p>
+
+  <div class="share-wrap">
+    <canvas class="share-canvas" id="card" width="1080" height="1920"></canvas>
+  </div>
+
+  <div class="share-buttons">
+    <button class="cta cta-secondary" id="shareBtn" data-i18n="share_btn">分享这张图</button>
+    <button class="cta cta-secondary" id="downloadBtn" data-i18n="download_btn">保存到相册</button>
+  </div>
+
+  <div class="app-cta">
+    <h2 data-i18n="app_title">网页只算一次。</h2>
+    <p data-i18n="app_sub">App 让你每天都能看见这件事 —— 每一次打卡，都是没让今天白过的证据。</p>
+    <a class="cta" id="appStoreBtn" href="https://apps.apple.com/app/id6773033522" data-i18n="app_btn">下载完整版 App · $2.99</a>
+  </div>
+</section>
+
+<div class="footer">
+  © 2026 Jinxing Liu ·
+  <a href="privacy.html">Privacy</a> ·
+  <a href="terms.html">Terms</a> ·
+  <a href="mailto:liujinxingde2008@hotmail.com">Support</a>
+</div>
+
+</div>
+
+<script>
+"use strict";
+
+// ---------------- i18n (all strings are static, controlled by this file) ----------------
+const I18N = {
+  "zh-Hans":{
+    brand:"几天 · Few Days",
+    hook_title_pre:"你和爸妈，",
+    hook_title_em:"还剩多少天",
+    hook_title_post:"？",
+    hook_sub:"30 秒算一下，你可能比想的要少。",
+    q1:"爸妈现在多少岁？", q1_hint:"（取较年长的一位）",
+    q2:"你一年大概见他们几次？",
+    times_unit:"次",
+    q3:"你期望他们能活到多少岁？", q3_hint:"（保留默认就好——长命百岁）",
+    calc_btn:"算给我看",
+    r_label:"你还能见爸妈", r_unit:"次",
+    share_prompt:"把这张卡片发给一个你想念的人 ↓",
+    share_btn:"分享这张图", download_btn:"保存到相册",
+    app_title:"网页只算一次。",
+    app_sub:"App 让你每天都能看见这件事 —— 每一次打卡，都是没让今天白过的证据。",
+    app_btn:"下载完整版 App · $2.99",
+    line1:(calc)=>["如果他们活到 ", `${calc.life}`, " 岁，按你现在的频率，你还能见他们 ", `${calc.visitsLeft}`, " 次。"],
+    line2:(calc)=>["换算成天，是 ", calc.yearsLeft.toFixed(1), " 年里 ", calc.days.toLocaleString(), " 天的零散时光。"],
+    card_top:"我这辈子，",
+    card_mid_pre:"还能见爸妈", card_mid_post:"次",
+    card_sub:(y)=>`大约 ${y.toFixed(1)} 年，每一次见面都算一次`,
+    card_kicker:"这是总数。这一辈子。",
+    card_brand:"几天 · 算算你的",
+    card_url:"DaysWith.app"
+  },
+  "zh-Hant":{
+    brand:"幾天 · Few Days",
+    hook_title_pre:"你和爸媽，",
+    hook_title_em:"還剩多少天",
+    hook_title_post:"？",
+    hook_sub:"30 秒算一下，你可能比想的要少。",
+    q1:"爸媽現在多少歲？", q1_hint:"（取較年長的一位）",
+    q2:"你一年大概見他們幾次？",
+    times_unit:"次",
+    q3:"你期望他們能活到多少歲？", q3_hint:"（保留預設就好——長命百歲）",
+    calc_btn:"算給我看",
+    r_label:"你還能見爸媽", r_unit:"次",
+    share_prompt:"把這張卡片發給一個你想念的人 ↓",
+    share_btn:"分享這張圖", download_btn:"儲存到相簿",
+    app_title:"網頁只算一次。",
+    app_sub:"App 讓你每天都能看見這件事 —— 每一次打卡，都是沒讓今天白過的證據。",
+    app_btn:"下載完整版 App · $2.99",
+    line1:(calc)=>["如果他們活到 ", `${calc.life}`, " 歲，按你現在的頻率，你還能見他們 ", `${calc.visitsLeft}`, " 次。"],
+    line2:(calc)=>["換算成天，是 ", calc.yearsLeft.toFixed(1), " 年裡 ", calc.days.toLocaleString(), " 天的零散時光。"],
+    card_top:"我這輩子，",
+    card_mid_pre:"還能見爸媽", card_mid_post:"次",
+    card_sub:(y)=>`大約 ${y.toFixed(1)} 年，每一次見面都算一次`,
+    card_kicker:"這是總數。這一輩子。",
+    card_brand:"幾天 · 算算你的",
+    card_url:"DaysWith.app"
+  },
+  "en":{
+    brand:"Few Days",
+    hook_title_pre:"How many days do you ",
+    hook_title_em:"have left with them",
+    hook_title_post:"?",
+    hook_sub:"30 seconds. The number may surprise you.",
+    q1:"How old is your older parent?", q1_hint:"(Just one — the older one)",
+    q2:"How often do you see them per year?",
+    times_unit:"times",
+    q3:"How long do you hope they'll live?", q3_hint:"(Default is the classic — 85)",
+    calc_btn:"Show me",
+    r_label:"You'll see them about", r_unit:"more times",
+    share_prompt:"Send this to someone you've been meaning to call ↓",
+    share_btn:"Share this", download_btn:"Save image",
+    app_title:"The website calculates once.",
+    app_sub:"The app makes it real — every check-in is proof you didn't waste today.",
+    app_btn:"Get the iOS app · $2.99",
+    line1:(calc)=>["At your current pace, you have about ", `${calc.visitsLeft}`, " more visits left. Total. Ever."],
+    line2:(calc)=>["That's ", calc.days.toLocaleString(), " days of presence, spread across ", calc.yearsLeft.toFixed(1), " years."],
+    card_top:"In my whole life,",
+    card_mid_pre:"I'll see Mom & Dad", card_mid_post:"more times",
+    card_sub:(y)=>`~${y.toFixed(1)} years. That's every visit. Ever.`,
+    card_kicker:"This is the total. The whole thing.",
+    card_brand:"Few Days · find yours",
+    card_url:"DaysWith.app"
+  }
+};
+
+let currentLang = (()=>{
+  const saved = localStorage.getItem('lang');
+  if (saved && I18N[saved]) return saved;
+  const nav = (navigator.language||'').toLowerCase();
+  if (nav.startsWith('zh')) {
+    if (nav.includes('hant')||nav.includes('tw')||nav.includes('hk')||nav.includes('mo')) return 'zh-Hant';
+    return 'zh-Hans';
+  }
+  return 'en';
+})();
+
+// Safe DOM construction (no innerHTML used anywhere)
+function setText(el, str){ el.textContent = str; }
+
+function buildHookTitle(dict){
+  const h = document.getElementById('hookTitle');
+  h.textContent = '';
+  h.appendChild(document.createTextNode(dict.hook_title_pre));
+  const em = document.createElement('em');
+  em.textContent = dict.hook_title_em;
+  h.appendChild(em);
+  h.appendChild(document.createTextNode(dict.hook_title_post));
+}
+
+function buildResultLine(id, parts){
+  // parts: array of strings — odd indices [1,3,5...] get bolded
+  const el = document.getElementById(id);
+  el.textContent = '';
+  parts.forEach((p,i)=>{
+    if (i%2===1){
+      const s = document.createElement('strong');
+      s.textContent = p;
+      el.appendChild(s);
+    } else {
+      el.appendChild(document.createTextNode(p));
+    }
+  });
+}
+
+function applyI18n(){
+  document.documentElement.lang = currentLang;
+  const dict = I18N[currentLang];
+  document.title = currentLang==='en'
+    ? "How many days do you have left? — Few Days"
+    : (currentLang==='zh-Hant' ? "你和爸媽還剩多少天？— 幾天" : "你和爸妈还剩多少天？— 几天");
+
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key = el.dataset.i18n;
+    if (typeof dict[key] === 'string') setText(el, dict[key]);
+  });
+
+  buildHookTitle(dict);
+
+  // life slider default depends on locale (EN: 85, zh: 100) — must adjust before recompute
+  const life = document.getElementById('life');
+  if (!life.dataset.touched){
+    life.value = currentLang==='en' ? 85 : 100;
+    document.getElementById('lifeVal').textContent = life.value;
+    updateSliderFill(life);
+  }
+
+  // If a result was already calculated, recompute with current slider values
+  // (life might have just auto-changed due to locale flip) and redraw everything.
+  if (lastCalc) {
+    lastCalc = calculate();
+    renderResult();
+    drawCard(lastCalc);
+  }
+
+  document.querySelectorAll('.lang a').forEach(a=>{
+    a.classList.toggle('active', a.dataset.lang===currentLang);
+  });
+}
+
+document.querySelectorAll('.lang a').forEach(a=>{
+  a.addEventListener('click',e=>{
+    e.preventDefault();
+    currentLang = a.dataset.lang;
+    localStorage.setItem('lang', currentLang);
+    applyI18n();
+  });
+});
+
+// ---------------- Sliders ----------------
+function updateSliderFill(input){
+  const pct = ((input.value - input.min) / (input.max - input.min)) * 100;
+  input.style.setProperty('--pct', pct + '%');
+}
+['age','visits','life'].forEach(id=>{
+  const el = document.getElementById(id);
+  const out = document.getElementById(id+'Val');
+  updateSliderFill(el);
+  el.addEventListener('input', ()=>{
+    out.textContent = el.value;
+    updateSliderFill(el);
+    if (id==='life') el.dataset.touched = '1';
+  });
+});
+
+// ---------------- Calculation ----------------
+const resultEl = document.getElementById('result');
+let lastCalc = null;
+
+function calculate(){
+  const age = +document.getElementById('age').value;
+  const visits = +document.getElementById('visits').value;
+  const life = +document.getElementById('life').value;
+  const yearsLeft = Math.max(0, life - age);
+  const visitsLeft = Math.round(yearsLeft * visits);
+  const days = visitsLeft * 3; // each visit ~3 days average
+  return {age, visits, life, yearsLeft, visitsLeft, days};
+}
+
+function renderResult(){
+  if (!lastCalc) return;
+  const dict = I18N[currentLang];
+  document.getElementById('rNum').textContent = lastCalc.visitsLeft.toLocaleString();
+  buildResultLine('rLine1', dict.line1(lastCalc));
+  buildResultLine('rLine2', dict.line2(lastCalc));
+}
+
+document.getElementById('calcBtn').addEventListener('click', ()=>{
+  lastCalc = calculate();
+  renderResult();
+  drawCard(lastCalc);
+  resultEl.classList.add('show');
+  setTimeout(()=>{
+    resultEl.scrollIntoView({behavior:'smooth', block:'start'});
+  }, 60);
+});
+
+// ---------------- Share card (Canvas) ----------------
+const canvas = document.getElementById('card');
+const ctx = canvas.getContext('2d');
+
+function drawCard(calc){
+  const W = canvas.width, H = canvas.height;
+  const dict = I18N[currentLang];
+
+  // ============================================================
+  // BG — navy upper, cream lower; horizon at ~62%, sun setting on it
+  // ============================================================
+  const HORIZON = Math.round(H * 0.62);
+  const FOOTER_H = 240;
+
+  // Navy sky (top section)
+  ctx.fillStyle = '#1B1B2E';
+  ctx.fillRect(0, 0, W, HORIZON);
+
+  // Cream "ground" (mid section)
+  ctx.fillStyle = '#FAF5EB';
+  ctx.fillRect(0, HORIZON, W, H - HORIZON - FOOTER_H);
+
+  // Navy footer
+  ctx.fillStyle = '#1B1B2E';
+  ctx.fillRect(0, H - FOOTER_H, W, FOOTER_H);
+
+  // Sun — large amber circle, half above / half below horizon
+  const sunR = 380, sunCx = W/2, sunCy = HORIZON;
+  ctx.save();
+  // Outer glow
+  const grad = ctx.createRadialGradient(sunCx, sunCy, sunR*0.4, sunCx, sunCy, sunR*1.6);
+  grad.addColorStop(0, 'rgba(217,142,38,0.55)');
+  grad.addColorStop(1, 'rgba(217,142,38,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, HORIZON - sunR*1.6, W, sunR*3);
+  // Sun disc
+  ctx.fillStyle = '#D98E26';
+  ctx.beginPath();
+  ctx.arc(sunCx, sunCy, sunR, 0, Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+
+  // Subtle stars in the sky (deterministic from the number)
+  ctx.save();
+  ctx.fillStyle = '#FAF5EB';
+  ctx.globalAlpha = 0.55;
+  const seed = (calc.visitsLeft * 9301 + 49297) % 233280;
+  let s = seed;
+  function rand(){ s = (s * 9301 + 49297) % 233280; return s / 233280; }
+  for (let i = 0; i < 22; i++){
+    const x = rand() * W;
+    const y = rand() * (HORIZON - sunR * 0.6);
+    const r = 2 + rand() * 3;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // ============================================================
+  // TOP TEXT (on navy sky) — "我这辈子，" small + intimate
+  // ============================================================
+  ctx.fillStyle = 'rgba(250,245,235,0.72)';
+  ctx.font = '500 44px -apple-system, "PingFang SC", "Helvetica Neue", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(dict.card_top, W/2, 180);
+
+  // ============================================================
+  // KICKER (under top, on navy) — "这是总数。这一辈子。"
+  // ============================================================
+  ctx.fillStyle = '#D98E26';
+  ctx.font = '700 40px -apple-system, "PingFang SC", sans-serif';
+  ctx.fillText(dict.card_kicker, W/2, 252);
+
+  // ============================================================
+  // PRE phrase (over the sun, on navy) — "还能见爸妈"
+  // ============================================================
+  ctx.fillStyle = '#FAF5EB';
+  ctx.font = '700 66px -apple-system, "PingFang SC", sans-serif';
+  ctx.fillText(dict.card_mid_pre, W/2, HORIZON - 80);
+
+  // ============================================================
+  // HUGE NUMBER (centered on the horizon, white on amber sun)
+  // ============================================================
+  ctx.save();
+  ctx.fillStyle = '#FAF5EB';
+  ctx.font = '900 320px -apple-system, "PingFang SC", "Helvetica Neue", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(calc.visitsLeft.toLocaleString(), W/2, HORIZON + 24);
+  ctx.restore();
+
+  // ============================================================
+  // POST unit ("次") — on the cream ground, under the sun
+  // ============================================================
+  ctx.fillStyle = '#1B1B2E';
+  ctx.font = '700 76px -apple-system, "PingFang SC", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText(dict.card_mid_post, W/2, HORIZON + sunR + 80);
+
+  // Sub line ("大约 35 年，每一次见面都算一次")
+  ctx.fillStyle = '#7A7560';
+  ctx.font = '500 32px -apple-system, "PingFang SC", sans-serif';
+  ctx.fillText(dict.card_sub(calc.yearsLeft), W/2, HORIZON + sunR + 140);
+
+  // ============================================================
+  // FOOTER — brand + URL on navy
+  // ============================================================
+  // Moon crescent (left-aligned with brand text)
+  const footerY = H - FOOTER_H/2 - 18;
+  const moonX = W/2 - 200;
+  ctx.save();
+  ctx.translate(moonX, footerY);
+  ctx.fillStyle = '#D98E26';
+  ctx.beginPath();
+  ctx.arc(0, 0, 26, 0, Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle = '#1B1B2E';
+  ctx.beginPath();
+  ctx.arc(9, -3, 22, 0, Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+
+  // Brand text
+  ctx.fillStyle = '#FAF5EB';
+  ctx.font = '700 44px -apple-system, "PingFang SC", sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(dict.card_brand, moonX + 50, footerY + 16);
+
+  // URL line (centered)
+  ctx.fillStyle = '#D98E26';
+  ctx.font = '600 30px -apple-system, "Helvetica Neue", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(dict.card_url, W/2, H - 70);
+}
+
+// ---------------- Share / Download ----------------
+function canvasToBlob(){
+  return new Promise(res => canvas.toBlob(res, 'image/png', 0.95));
+}
+
+document.getElementById('downloadBtn').addEventListener('click', async ()=>{
+  const blob = await canvasToBlob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'few-days-' + Date.now() + '.png';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 1500);
+});
+
+document.getElementById('shareBtn').addEventListener('click', async ()=>{
+  const blob = await canvasToBlob();
+  const file = new File([blob], 'few-days.png', {type:'image/png'});
+  const dict = I18N[currentLang];
+  const url = "https://zhengxuancheng.github.io/DaysWith/calc.html";
+  const shareText = currentLang==='en'
+    ? `${dict.card_mid_pre} ${lastCalc.visitsLeft} ${dict.card_mid_post}. Yours? → ${url}`
+    : `${dict.card_mid_pre} ${lastCalc.visitsLeft} ${dict.card_mid_post}。算算你的 → ${url}`;
+
+  if (navigator.canShare && navigator.canShare({files:[file]})){
+    try{
+      await navigator.share({files:[file], text:shareText});
+    }catch(e){/* user canceled */}
+  } else {
+    document.getElementById('downloadBtn').click();
+  }
+});
+
+applyI18n();
+</script>
+
+</body>
+</html>
